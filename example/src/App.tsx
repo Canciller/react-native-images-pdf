@@ -1,31 +1,21 @@
 import * as React from 'react';
 
-import { StyleSheet, View, Text } from 'react-native';
-import { multiply } from 'react-native-images-pdf';
+import ImagesPdf from 'react-native-images-pdf';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
-
   React.useEffect(() => {
-    multiply(3, 7).then(setResult);
+    const createPdf = async () => {
+      const docsDir = await ImagesPdf.getDocumentDirectory();
+      const path = `${docsDir}/test2.pdf`;
+
+      ImagesPdf.create({
+        path,
+        images: ['path', 'path', 'path'],
+      });
+    };
+
+    createPdf();
   }, []);
 
-  return (
-    <View style={styles.container}>
-      <Text>Result: {result}</Text>
-    </View>
-  );
+  return null;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  box: {
-    width: 60,
-    height: 60,
-    marginVertical: 20,
-  },
-});
