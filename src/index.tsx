@@ -6,7 +6,7 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo Go\n';
 
-const ImagesPdfModule = NativeModules.ImagesPdf
+const ImagesPdf = NativeModules.ImagesPdf
   ? NativeModules.ImagesPdf
   : new Proxy(
       {},
@@ -22,12 +22,10 @@ export interface CreateOptions {
   path: string;
 }
 
-export default class ImagesPdf {
-  static create(options: CreateOptions): Promise<void> {
-    return ImagesPdfModule.create(options);
-  }
+export function createPdf(options: CreateOptions): Promise<void> {
+  return ImagesPdf.create(options);
+}
 
-  static getDocumentDirectory(): Promise<string> {
-    return ImagesPdfModule.getDocumentDirectory();
-  }
+export function getDocumentDirectory(): Promise<string> {
+  return ImagesPdf.getDocumentDirectory();
 }

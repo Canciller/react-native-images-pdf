@@ -7,37 +7,23 @@ class ImagesPdf: NSObject {
     let images = options["images"] as! Array<NSString>
     let path = options["path"] as! NSString
     
-    let format = UIGraphicsPDFRendererFormat()
-    let metaData = [
-      kCGPDFContextTitle: "Hello, World!",
-      kCGPDFContextAuthor: "canciller"
-    ]
-    format.documentInfo = metaData as [String: Any]
-    
-    let pageRect = CGRect(x: 0, y: 0, width: 595, height: 842)
-    let renderer = UIGraphicsPDFRenderer(bounds: pageRect, format: format)
+    let renderer = UIGraphicsPDFRenderer()
     
     let data = renderer.pdfData { (context) in
-      for _ in images {
-        context.beginPage()
+      for path in images {
+        let url = URL(string: String(path))!
         
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.alignment = .center
-        let attributes = [
-          NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 14),
-          NSAttributedString.Key.paragraphStyle: paragraphStyle
-        ]
-        let text = "Hello, World!"
-        let textRect = CGRect(x: 100, // left margin
-                              y: 100, // top margin
-                              width: 200,
-                              height: 20)
+        let image = UIImage(contentsOfFile: url.path)
         
-        text.draw(in: textRect, withAttributes: attributes)
+        if let image = image {
+          let bounds = CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height)
+          context.beginPage(withBounds: bounds, pageInfo: [:])
+          image.draw(at: .zero)
+        }
       }
     }
     
-    var url = URL(string: String(path))!
+    let url = URL(string: String(path))!
     
     let pdfDocument = PDFDocument(data: data)
     
@@ -53,7 +39,7 @@ class ImagesPdf: NSObject {
     var path = docDir.absoluteString
     path.removeLast()
     
-    return resolve(path)
+    resolve(path)
   }
   
   func getDocumentDirectoryURL() -> URL {
