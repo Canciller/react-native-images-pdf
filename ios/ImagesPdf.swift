@@ -1,9 +1,7 @@
-import PDFKit
-
 @objc(ImagesPdf)
 class ImagesPdf: NSObject {
   @objc(create:withResolver:withRejecter:)
-  func create(options: NSDictionary, resolve:RCTPromiseResolveBlock, reject:RCTPromiseRejectBlock) {
+  func create(options: NSDictionary, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
     let images = options["images"] as! Array<NSString>
     let path = options["path"] as! NSString
     
@@ -13,7 +11,14 @@ class ImagesPdf: NSObject {
       for path in images {
         let url = URL(string: String(path))!
         
-        let image = UIImage(contentsOfFile: url.path)
+        var image: UIImage? = nil
+        
+        do {
+          let imageData = try Data(contentsOf: url)
+          image = UIImage(data: imageData)
+        } catch {
+          return reject("LOAD_IMAGE_ERROR", error.localizedDescription, error)
+        }
         
         if let image = image {
           let bounds = CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height)
@@ -25,10 +30,10 @@ class ImagesPdf: NSObject {
     
     let url = URL(string: String(path))!
     
-    let pdfDocument = PDFDocument(data: data)
-    
-    if let pdfDocument = pdfDocument {
-      pdfDocument.write(to: url)
+    do {
+      try data.write(to: url)
+    } catch {
+      return reject("WRITE_PDF_ERROR", error.localizedDescription, error)
     }
   }
   
