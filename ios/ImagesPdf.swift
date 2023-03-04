@@ -2,19 +2,20 @@
 class ImagesPdf: NSObject {
   @objc(createPdf:withResolver:withRejecter:)
   func createPdf(options: NSDictionary, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-    let images = options["images"] as! Array<NSString>
-    let path = options["path"] as! NSString
+    let images = options["images"] as! Array<String>
+    let filename = options["filename"] as! String
+    let directory = options["directory"] as! String
     
     let renderer = UIGraphicsPDFRenderer()
     
     let data = renderer.pdfData { (context) in
-      for path in images {
-        let url = URL(string: String(path))!
-        
+      for imagePath in images {
+        let imageUrl = URL(string: imagePath)!
+
         var image: UIImage? = nil
         
         do {
-          let imageData = try Data(contentsOf: url)
+          let imageData = try Data(contentsOf: imageUrl)
           image = UIImage(data: imageData)
         } catch {
           return reject("LOAD_IMAGE_ERROR", error.localizedDescription, error)
@@ -29,7 +30,8 @@ class ImagesPdf: NSObject {
       }
     }
     
-    let url = URL(string: String(path))!
+    let url = URL(string: directory)!
+      .appendingPathComponent(filename)
     
     do {
       try data.write(to: url)
@@ -39,8 +41,8 @@ class ImagesPdf: NSObject {
   }
   
   @objc
-  func getDocumentDirectory(_ resolve:RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    let docDir = getDocumentDirectoryURL()
+  func getDocumentsDirectory(_ resolve:RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    let docDir = getDocumentsDirectoryURL()
     
     var path = docDir.absoluteString
     path.removeLast()
@@ -48,7 +50,7 @@ class ImagesPdf: NSObject {
     resolve(path)
   }
   
-  func getDocumentDirectoryURL() -> URL {
+  func getDocumentsDirectoryURL() -> URL {
     let docDir = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
     return docDir
   }

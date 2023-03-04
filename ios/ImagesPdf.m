@@ -9,7 +9,7 @@ RCT_EXTERN_METHOD(
                   )
 
 RCT_EXTERN_METHOD(
-                  getDocumentDirectory: (RCTPromiseResolveBlock)resolve
+                  getDocumentsDirectory: (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject
                   )
 
