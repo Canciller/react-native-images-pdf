@@ -1,7 +1,7 @@
 @objc(ImagesPdf)
 class ImagesPdf: NSObject {
-  @objc(create:withResolver:withRejecter:)
-  func create(options: NSDictionary, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+  @objc(createPdf:withResolver:withRejecter:)
+  func createPdf(options: NSDictionary, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
     let images = options["images"] as! Array<NSString>
     let path = options["path"] as! NSString
     
@@ -22,6 +22,7 @@ class ImagesPdf: NSObject {
         
         if let image = image {
           let bounds = CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height)
+          // TODO: pageInfo?
           context.beginPage(withBounds: bounds, pageInfo: [:])
           image.draw(at: .zero)
         }

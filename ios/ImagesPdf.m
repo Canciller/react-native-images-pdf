@@ -3,7 +3,7 @@
 @interface RCT_EXTERN_MODULE(ImagesPdf, NSObject)
 
 RCT_EXTERN_METHOD(
-                  create: (NSDictionary)options
+                  createPdf: (NSDictionary)options
                   withResolver: (RCTPromiseResolveBlock)resolve
                   withRejecter: (RCTPromiseRejectBlock)reject
                   )
