@@ -18,9 +18,9 @@ const ImagesPdf = NativeModules.ImagesPdf
     );
 
 export interface CreateOptions {
-  images: string[];
-  directory: string;
-  filename: string;
+  imagePaths: string[];
+  outputDirectory: string;
+  outputFilename: string;
 }
 
 export function createPdf(options: CreateOptions): Promise<void> {
