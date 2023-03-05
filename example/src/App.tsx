@@ -24,7 +24,7 @@ export default function App() {
         }
 
         const outputDirectory = resultPickDir.uri;
-        const outputFilename = 'example.pdf';
+        const outputFilename = 'Example.pdf';
 
         await createPdf({
           imagePaths,
