@@ -1,21 +1,11 @@
 # react-native-images-pdf
 
-Images to PDF
+A React Native module that allows you to create a PDF file from images.
 
 ## Installation
 
 ```sh
-npm install react-native-images-pdf
-```
-
-## Usage
-
-```js
-import { multiply } from 'react-native-images-pdf';
-
-// ...
-
-const result = await multiply(3, 7);
+yarn add react-native-images-pdf
 ```
 
 ## Contributing
