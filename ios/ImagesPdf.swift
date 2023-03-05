@@ -2,14 +2,18 @@
 class ImagesPdf: NSObject {
   @objc(createPdf:withResolver:withRejecter:)
   func createPdf(options: NSDictionary, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-    let images = options["images"] as! Array<String>
-    let filename = options["filename"] as! String
-    let directory = options["directory"] as! String
+    let imagePaths = options["imagePaths"] as! Array<String>
+    let outputDirectory = options["outputDirectory"] as! String
+    let outputFilename = options["outputFilename"] as! String
+    
+    if imagePaths.isEmpty {
+      return resolve(nil)
+    }
     
     let renderer = UIGraphicsPDFRenderer()
     
     let data = renderer.pdfData { (context) in
-      for imagePath in images {
+      for imagePath in imagePaths {
         let imageUrl = URL(string: imagePath)!
 
         var image: UIImage? = nil
@@ -18,7 +22,7 @@ class ImagesPdf: NSObject {
           let imageData = try Data(contentsOf: imageUrl)
           image = UIImage(data: imageData)
         } catch {
-          return reject("LOAD_IMAGE_ERROR", error.localizedDescription, error)
+          return reject("PDF_PAGE_CREATE_ERROR", error.localizedDescription, error)
         }
         
         if let image = image {
@@ -30,28 +34,28 @@ class ImagesPdf: NSObject {
       }
     }
     
-    let url = URL(string: directory)!
-      .appendingPathComponent(filename)
+    let url = URL(string: outputDirectory)!
+      .appendingPathComponent(outputFilename)
     
     do {
       try data.write(to: url)
     } catch {
-      return reject("WRITE_PDF_ERROR", error.localizedDescription, error)
+      return reject("PDF_WRITE_ERROR", error.localizedDescription, error)
     }
   }
   
   @objc
   func getDocumentsDirectory(_ resolve:RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    let docDir = getDocumentsDirectoryURL()
+    let docsDir = getDocumentsDirectoryURL()
     
-    var path = docDir.absoluteString
+    var path = docsDir.absoluteString
     path.removeLast()
     
     resolve(path)
   }
   
   func getDocumentsDirectoryURL() -> URL {
-    let docDir = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-    return docDir
+    let docsDir = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+    return docsDir
   }
 }
