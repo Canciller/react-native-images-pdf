@@ -1,6 +1,6 @@
 # react-native-images-pdf
 
-Easily generate PDF documents from images in React Native.
+Easily generate PDF files from images in React Native.
 
 ## Installation
 
@@ -44,6 +44,13 @@ createPdf(options)
 ## Example
 
 Check the `example` folder for a usage demo.
+<table>
+  <tr><td><strong>iOS</strong></td><td><strong>Android</strong></td></tr>
+  <tr>
+    <td><p align="center"><img src="/docs/example-ios.gif" height="500"></p></td>
+    <td><p align="center"><img src="/docs/example-android.gif" height="500"></p></td>
+  </tr>
+</table>
 
 ## Contributing
 
