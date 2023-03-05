@@ -1,30 +1,42 @@
 import * as React from 'react';
-import test1 from './test-1.jpeg';
-import { StyleSheet, Image } from 'react-native';
-import ImagesPdf from 'react-native-images-pdf';
+import { createPdf } from 'react-native-images-pdf';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { pickDirectory } from 'react-native-document-picker';
+import { Button, StyleSheet, View } from 'react-native';
 export default function App() {
-    React.useEffect(() => {
-        const createPdf = async () => {
-            const source = Image.resolveAssetSource(test1);
-            ImagesPdf.create({
-                path: 'test',
-                filename: 'test.pdf',
-                images: [source.uri, source.uri, source.uri],
+    const selectImages = async () => {
+        try {
+            const result = await launchImageLibrary({
+                mediaType: 'photo',
+                selectionLimit: 0,
             });
-        };
-        createPdf();
-    }, []);
-    return React.createElement(Image, { source: test1 });
+            if (result.assets) {
+                const assets = result.assets;
+                const imagePaths = assets.map((asset) => asset.uri);
+                const resultPickDir = await pickDirectory();
+                if (!resultPickDir) {
+                    return;
+                }
+                const outputDirectory = resultPickDir.uri;
+                const outputFilename = 'example.pdf';
+                await createPdf({
+                    imagePaths,
+                    outputDirectory,
+                    outputFilename,
+                });
+            }
+        }
+        catch (e) {
+            console.error(e);
+        }
+    };
+    return (React.createElement(View, { style: styles.root },
+        React.createElement(Button, { title: "Select images", onPress: selectImages })));
 }
 const styles = StyleSheet.create({
-    container: {
+    root: {
         flex: 1,
-        alignItems: 'center',
         justifyContent: 'center',
-    },
-    box: {
-        width: 60,
-        height: 60,
-        marginVertical: 20,
+        alignItems: 'center',
     },
 });
