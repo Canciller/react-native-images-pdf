@@ -1,6 +1,5 @@
 package com.imagespdf;
 
-import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,7 +9,6 @@ import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.autofill.inline.UiVersions;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.facebook.react.bridge.Promise;
