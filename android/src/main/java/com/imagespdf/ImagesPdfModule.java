@@ -80,8 +80,10 @@ public class ImagesPdfModule extends ReactContextBaseJavaModule {
         return;
       }
 
+      Uri outputUri = null;
+
       try {
-        writePdfDocument(pdfDocument, outputDirectory, outputFilename);
+        outputUri = writePdfDocument(pdfDocument, outputDirectory, outputFilename);
       } catch (Exception e) {
         Log.e("ImagesPdfModule", e.getLocalizedMessage(), e);
         promise.reject("PDF_WRITE_ERROR", e.getLocalizedMessage(), e);
@@ -90,8 +92,11 @@ public class ImagesPdfModule extends ReactContextBaseJavaModule {
       }
 
       pdfDocument.close();
+
+      promise.resolve(outputUri.getPath());
     } catch (Exception e) {
       Log.e("ImagesPdfModule", e.getLocalizedMessage(), e);
+
       promise.reject("PDF_CREATE_ERROR", e.getLocalizedMessage(), e);
     }
   }
@@ -102,8 +107,9 @@ public class ImagesPdfModule extends ReactContextBaseJavaModule {
     promise.resolve(docsDir);
   }
 
-  public void writePdfDocument(PdfDocument pdfDocument, String outputDirectory, String outputFilename) throws IOException {
+  public Uri writePdfDocument(PdfDocument pdfDocument, String outputDirectory, String outputFilename) throws IOException {
     OutputStream outputStream = null;
+    Uri outputUri = null;
 
     try {
       Uri uri = Uri.parse(outputDirectory);
@@ -120,16 +126,17 @@ public class ImagesPdfModule extends ReactContextBaseJavaModule {
         DocumentFile pdfFile = dirFile
           .createFile(mimeTypePdf, outputFilename);
 
+        outputUri = pdfFile.getUri();
+
         outputStream = getReactApplicationContext()
           .getContentResolver()
-          .openOutputStream(pdfFile.getUri());
+          .openOutputStream(outputUri);
       } else if (scheme == null || scheme.equals(ContentResolver.SCHEME_FILE)) {
-        String path = uri.buildUpon()
+        outputUri = uri.buildUpon()
           .appendPath(outputFilename)
-          .build()
-          .getPath();
+          .build();
 
-        outputStream = new FileOutputStream(path);
+        outputStream = new FileOutputStream(outputUri.getPath());
       } else {
         throw new UnsupportedOperationException("Unsupported scheme: " + uri.getScheme());
       }
@@ -140,6 +147,8 @@ public class ImagesPdfModule extends ReactContextBaseJavaModule {
         outputStream.close();
       }
     }
+
+    return outputUri;
   }
 
   public Bitmap getBitmapFromPathOrUri(String pathOrUri) throws IOException {
@@ -157,7 +166,7 @@ public class ImagesPdfModule extends ReactContextBaseJavaModule {
 
         inputStream = contentResolver
           .openInputStream(uri);
-      } else if(scheme == null || scheme.equals(ContentResolver.SCHEME_FILE)) {
+      } else if (scheme == null || scheme.equals(ContentResolver.SCHEME_FILE)) {
         inputStream = new FileInputStream(uri.getPath());
       } else {
         throw new UnsupportedOperationException("Unsupported scheme: " + uri.getScheme());

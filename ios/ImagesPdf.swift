@@ -42,6 +42,8 @@ class ImagesPdf: NSObject {
     } catch {
       return reject("PDF_WRITE_ERROR", error.localizedDescription, error)
     }
+    
+    resolve(url.absoluteString)
   }
   
   @objc
