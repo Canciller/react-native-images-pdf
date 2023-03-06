@@ -1,28 +1,39 @@
 @objc(ImagesPdf)
 class ImagesPdf: NSObject {
-  @objc(createPdf:withResolver:withRejecter:)
-  func createPdf(options: NSDictionary, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+  @objc
+  func createPdf(_ options: NSDictionary, resolver resolve:RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     let imagePaths = options["imagePaths"] as! Array<String>
     let outputDirectory = options["outputDirectory"] as! String
     let outputFilename = options["outputFilename"] as! String
     
+    var urlComponent = URLComponents(string: outputDirectory)!
+    urlComponent.scheme = "file"
+    
+    let url = urlComponent.url!.appendingPathComponent(outputFilename)
+    
     if imagePaths.isEmpty {
-      return resolve(nil)
+      resolve(url.absoluteString)
+      return
     }
     
     let renderer = UIGraphicsPDFRenderer()
+    var errorOccurred = false
     
     let data = renderer.pdfData { (context) in
       for imagePath in imagePaths {
-        let imageUrl = URL(string: imagePath)!
-
+        var imageUrlComponent = URLComponents(string: imagePath)!
+        imageUrlComponent.scheme = "file"
+        
+        var imageUrl = imageUrlComponent.url!
         var image: UIImage? = nil
         
         do {
           let imageData = try Data(contentsOf: imageUrl)
           image = UIImage(data: imageData)
         } catch {
-          return reject("PDF_PAGE_CREATE_ERROR", error.localizedDescription, error)
+          errorOccurred = true
+          reject("PDF_PAGE_CREATE_ERROR", error.localizedDescription, error)
+          return
         }
         
         if let image = image {
@@ -34,20 +45,18 @@ class ImagesPdf: NSObject {
       }
     }
     
-    let url = URL(string: outputDirectory)!
-      .appendingPathComponent(outputFilename)
-    
-    do {
-      try data.write(to: url)
-    } catch {
-      return reject("PDF_WRITE_ERROR", error.localizedDescription, error)
+    if !errorOccurred {
+      do {
+        try data.write(to: url)
+        resolve(url.absoluteString)
+      } catch {
+        reject("PDF_WRITE_ERROR", error.localizedDescription, error)
+      }
     }
-    
-    resolve(url.absoluteString)
   }
   
   @objc
-  func getDocumentsDirectory(_ resolve:RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  func getDocumentsDirectory(_ resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     let docsDir = getDocumentsDirectoryURL()
     
     var path = docsDir.absoluteString

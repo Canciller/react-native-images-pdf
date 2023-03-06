@@ -4,8 +4,8 @@
 
 RCT_EXTERN_METHOD(
                   createPdf: (NSDictionary)options
-                  withResolver: (RCTPromiseResolveBlock)resolve
-                  withRejecter: (RCTPromiseRejectBlock)reject
+                  resolver: (RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject
                   )
 
 RCT_EXTERN_METHOD(
