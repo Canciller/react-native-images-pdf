@@ -24,13 +24,13 @@ const options = {
 };
 
 createPdf(options)
-  .then(() => console.log('PDF created successfully'))
+  .then((path) => console.log(`PDF created successfully: ${path}`))
   .catch((error) => console.log(`Failed to create PDF: ${error}`));
 ```
 
 ## API
 
-### `createPdf(options: CreatePdfOptions) => Promise<string>`
+### `createPdf(options: CreatePdfOptions) => Promise<string | null>`
 
 Returns a Promise that resolves to a `string` representing the output path of the generated PDF file. If `imagePaths` is empty, it returns `null`.
 
