@@ -32,19 +32,20 @@ createPdf(options)
 
 ### `createPdf(options: CreatePdfOptions) => Promise<string>`
 
-Returns a Promise that resolves to a `string` representing the output path of the generated PDF file.
+Returns a Promise that resolves to a `string` representing the output path of the generated PDF file. If `imagePaths` is empty, it returns `null`.
 
 #### `CreatePdfOptions`
 
-| Option | Type | Description |
-| --- | --- | --- |
-| `imagePaths` | `string[]` | An array of paths to the images that should be included in the PDF. Images will be added to the PDF in the order specified. |
-| `outputDirectory` | `string` | The path to the directory where the output PDF file should be saved. |
-| `outputFilename` | `string` | The name of the output PDF file. |
+| Option            | Type       | Description                                                                                                                 |
+| ----------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `imagePaths`      | `string[]` | An array of paths to the images that should be included in the PDF. Images will be added to the PDF in the order specified. |
+| `outputDirectory` | `string`   | The path to the directory where the output PDF file should be saved.                                                        |
+| `outputFilename`  | `string`   | The name of the output PDF file.                                                                                            |
 
 ## Example
 
 Check the `example` folder for a usage demo.
+
 <table>
   <tr><td><strong>iOS</strong></td><td><strong>Android</strong></td></tr>
   <tr>

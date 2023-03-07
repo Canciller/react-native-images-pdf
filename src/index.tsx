@@ -23,7 +23,7 @@ export interface CreatePdfOptions {
   outputFilename: string;
 }
 
-export function createPdf(options: CreatePdfOptions): Promise<string> {
+export function createPdf(options: CreatePdfOptions): Promise<string | null> {
   return ImagesPdf.createPdf(options);
 }
 

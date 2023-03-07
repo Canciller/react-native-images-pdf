@@ -12,7 +12,7 @@ class ImagesPdf: NSObject {
     let url = urlComponent.url!.appendingPathComponent(outputFilename)
     
     if imagePaths.isEmpty {
-      resolve(url.absoluteString)
+      resolve(nil)
       return
     }
     
