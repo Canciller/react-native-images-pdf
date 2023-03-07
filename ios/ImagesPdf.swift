@@ -2,24 +2,35 @@
 class ImagesPdf: NSObject {
   @objc
   func createPdf(_ options: NSDictionary, resolver resolve:RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    let imagePaths = options["imagePaths"] as! Array<String>
-    let outputDirectory = options["outputDirectory"] as! String
-    let outputFilename = options["outputFilename"] as! String
-    
-    var urlComponent = URLComponents(string: outputDirectory)!
-    urlComponent.scheme = "file"
-    
-    let url = urlComponent.url!.appendingPathComponent(outputFilename)
-    
-    if imagePaths.isEmpty {
-      resolve(nil)
-      return
+    do {
+      let createPdfOptions = try parseOptions(options: options)
+      
+      let imagePaths = createPdfOptions.imagePaths
+      let outputDirectory = createPdfOptions.outputDirectory
+      let outputFilename = createPdfOptions.outputFilename
+      
+      if imagePaths.isEmpty {
+        resolve(nil)
+        return
+      }
+      
+      let data = try renderPdfData(imagePaths)
+      
+      let outputUrl = try writePdfData(data: data,
+                                           outputDirectory: outputDirectory,
+                                           outputFilename: outputFilename)
+      
+      resolve(outputUrl.absoluteString)
+    } catch {
+      reject("PDF_CREATE_ERROR", error.localizedDescription, error)
     }
-    
+  }
+  
+  func renderPdfData(_ imagePaths: [String]) throws -> Data {
     let renderer = UIGraphicsPDFRenderer()
-    var errorOccurred = false
+    var pageError: Error? = nil
     
-    let data = renderer.pdfData { (context) in
+    let data = renderer.pdfData {(context) in
       for imagePath in imagePaths {
         var imageUrlComponent = URLComponents(string: imagePath)!
         imageUrlComponent.scheme = "file"
@@ -31,9 +42,8 @@ class ImagesPdf: NSObject {
           let imageData = try Data(contentsOf: imageUrl)
           image = UIImage(data: imageData)
         } catch {
-          errorOccurred = true
-          reject("PDF_PAGE_CREATE_ERROR", error.localizedDescription, error)
-          return
+          pageError = error
+          break
         }
         
         if let image = image {
@@ -45,14 +55,22 @@ class ImagesPdf: NSObject {
       }
     }
     
-    if !errorOccurred {
-      do {
-        try data.write(to: url)
-        resolve(url.absoluteString)
-      } catch {
-        reject("PDF_WRITE_ERROR", error.localizedDescription, error)
-      }
+    if let pageError = pageError {
+      throw pageError
     }
+    
+    return data
+  }
+  
+  func writePdfData(data: Data, outputDirectory: String, outputFilename: String) throws -> URL {
+    var urlComponent = URLComponents(string: outputDirectory)!
+    urlComponent.scheme = "file"
+    
+    let url = urlComponent.url!.appendingPathComponent(outputFilename)
+    
+    try data.write(to: url)
+    
+    return url
   }
   
   @objc
@@ -68,5 +86,15 @@ class ImagesPdf: NSObject {
   func getDocumentsDirectoryURL() -> URL {
     let docsDir = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
     return docsDir
+  }
+  
+  func parseOptions(options: NSDictionary) throws -> CreatePdfOptions {
+    // Convert the NSDictionary to Data
+    let jsonData = try JSONSerialization.data(withJSONObject: options, options: [])
+    
+    // Decode the data to the CreatePdfOptions struct
+    let pdfCreateOptions = try JSONDecoder().decode(CreatePdfOptions.self, from: jsonData)
+    
+    return pdfCreateOptions
   }
 }
