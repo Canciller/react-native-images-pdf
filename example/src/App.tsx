@@ -15,7 +15,7 @@ export default function App() {
 
       if (result.assets) {
         const assets = result.assets;
-        const imagePaths = assets.map((asset) => asset.uri) as string[];
+        const imagePaths = assets.map((asset) => asset.uri as string);
 
         const resultPickDir = await pickDirectory();
 
