@@ -1,72 +1,155 @@
 @objc(ImagesPdf)
 class ImagesPdf: NSObject {
+  let E_PDF_CREATE_ERROR = "PDF_CREATE_ERROR"
+  let E_PDF_WRITE_ERROR = "PDF_WRITE_ERROR"
+  let E_PDF_PAGE_CREATE_ERROR = "PDF_PAGE_CREATE_ERROR"
+  let E_OUTPUT_DIRECTORY_DOES_NOT_EXIST = "OUTPUT_DIRECTORY_DOES_NOT_EXIST"
+  let E_OUTPUT_DIRECTORY_IS_NOT_WRITABLE = "OUTPUT_DIRECTORY_IS_NOT_WRITABLE"
+  
   @objc
   func createPdf(_ options: NSDictionary, resolver resolve:RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    let imagePaths = options["imagePaths"] as! Array<String>
-    let outputDirectory = options["outputDirectory"] as! String
-    let outputFilename = options["outputFilename"] as! String
-    
-    var urlComponent = URLComponents(string: outputDirectory)!
-    urlComponent.scheme = "file"
-    
-    let url = urlComponent.url!.appendingPathComponent(outputFilename)
-    
-    if imagePaths.isEmpty {
-      resolve(nil)
-      return
+    do {
+      let createPdfOptions = try parseOptions(options: options)
+      
+      let imagePaths = createPdfOptions.imagePaths
+      let outputDirectory = createPdfOptions.outputDirectory
+      let outputFilename = createPdfOptions.outputFilename
+      
+      if imagePaths.isEmpty {
+        resolve(nil)
+        return
+      }
+      
+      let data = try renderPdfData(imagePaths)
+      
+      let outputUrl = try writePdfFile(data: data,
+                                       outputDirectory: outputDirectory,
+                                       outputFilename: outputFilename)
+      
+      resolve(outputUrl.absoluteString)
+    } catch CreatePdfError.outputDirectoryIsNotWritable {
+      reject(E_OUTPUT_DIRECTORY_IS_NOT_WRITABLE,
+             "Output directory is not writable.",
+             nil)
+    } catch CreatePdfError.outputDirectoryDoesNotExist {
+      reject(E_OUTPUT_DIRECTORY_DOES_NOT_EXIST,
+             "Output directory does not exists.",
+             nil)
+    } catch CreatePdfError.pdfPageCreateError(let error) {
+      reject(E_PDF_PAGE_CREATE_ERROR,
+             error.localizedDescription,
+             error)
+    } catch CreatePdfError.pdfWriteError(let error) {
+      reject(E_PDF_WRITE_ERROR,
+             error.localizedDescription,
+             error)
+    } catch {
+      reject(E_PDF_CREATE_ERROR,
+             error.localizedDescription,
+             error)
     }
-    
+  }
+  
+  func renderPdfData(_ imagePaths: [String]) throws -> Data {
     let renderer = UIGraphicsPDFRenderer()
-    var errorOccurred = false
+    var pageError: Error? = nil
     
-    let data = renderer.pdfData { (context) in
+    let data = renderer.pdfData {(context) in
       for imagePath in imagePaths {
-        var imageUrlComponent = URLComponents(string: imagePath)!
-        imageUrlComponent.scheme = "file"
-        
-        var imageUrl = imageUrlComponent.url!
+        let imageUrl = buildUrl(paths: [imagePath])!
         var image: UIImage? = nil
         
         do {
           let imageData = try Data(contentsOf: imageUrl)
           image = UIImage(data: imageData)
         } catch {
-          errorOccurred = true
-          reject("PDF_PAGE_CREATE_ERROR", error.localizedDescription, error)
-          return
+          pageError = error
+          break
         }
         
         if let image = image {
           let bounds = CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height)
-          // TODO: pageInfo?
           context.beginPage(withBounds: bounds, pageInfo: [:])
           image.draw(at: .zero)
         }
       }
     }
     
-    if !errorOccurred {
-      do {
-        try data.write(to: url)
-        resolve(url.absoluteString)
-      } catch {
-        reject("PDF_WRITE_ERROR", error.localizedDescription, error)
-      }
+    if let pageError = pageError {
+      throw CreatePdfError.pdfPageCreateError(error: pageError)
     }
+    
+    return data
+  }
+  
+  func writePdfFile(data: Data, outputDirectory: String, outputFilename: String) throws -> URL {
+    let fileManager = FileManager.default
+    
+    let directoryUrl = buildUrl(paths: [outputDirectory])!
+    let directoryPath = directoryUrl.path
+    
+    if !fileManager.fileExists(atPath: directoryPath) {
+      throw CreatePdfError.outputDirectoryDoesNotExist
+    }
+    
+    if !fileManager.isWritableFile(atPath: directoryPath) {
+      throw CreatePdfError.outputDirectoryIsNotWritable
+    }
+    
+    let url = buildUrl(paths: [outputDirectory, outputFilename])!
+    
+    do {
+      try data.write(to: url)
+    } catch {
+      throw CreatePdfError.pdfWriteError(error: error)
+    }
+    
+    return url
+  }
+  
+  func buildUrl(paths: [String]) -> URL? {
+    if paths.isEmpty {
+      return nil
+    }
+    
+    var url = URL(string: paths[0])!
+    
+    if url.scheme == nil {
+      let fileScheme = URL(fileURLWithPath: "").scheme
+      
+      var urlComponent = URLComponents(string: paths[0])!
+      urlComponent.scheme = fileScheme
+      
+      url = urlComponent.url!
+    }
+    
+    for p in paths.dropFirst() {
+      url.appendPathComponent(p)
+    }
+    
+    return url
   }
   
   @objc
   func getDocumentsDirectory(_ resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    let docsDir = getDocumentsDirectoryURL()
+    let docsDirUrl = getDocumentsDirectoryURL()
     
-    var path = docsDir.absoluteString
-    path.removeLast()
+    var docsDir = docsDirUrl.absoluteString
+    docsDir.removeLast()
     
-    resolve(path)
+    resolve(docsDir)
   }
   
   func getDocumentsDirectoryURL() -> URL {
     let docsDir = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
     return docsDir
+  }
+  
+  func parseOptions(options: NSDictionary) throws -> CreatePdfOptions {
+    let jsonData = try JSONSerialization.data(withJSONObject: options, options: [])
+
+    let pdfCreateOptions = try JSONDecoder().decode(CreatePdfOptions.self, from: jsonData)
+    
+    return pdfCreateOptions
   }
 }
