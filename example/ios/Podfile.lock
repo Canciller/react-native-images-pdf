@@ -333,7 +333,7 @@ PODS:
     - React-Core
   - react-native-image-picker (5.1.0):
     - React-Core
-  - react-native-images-pdf (0.0.1):
+  - react-native-images-pdf (0.0.2):
     - React-Core
   - React-perflogger (0.71.3)
   - React-RCTActionSheet (0.71.3):
@@ -618,7 +618,7 @@ SPEC CHECKSUMS:
   React-logger: 957e5dc96d9dbffc6e0f15e0ee4d2b42829ff207
   react-native-document-picker: 958e2bc82e128be69055be261aeac8d872c8d34c
   react-native-image-picker: c33d4e79f0a14a2b66e5065e14946ae63749660b
-  react-native-images-pdf: 8d75f93dc585fd4668500a0df989a7a014cf1e64
+  react-native-images-pdf: 389a241571a92f16b7128abd1c612f7029d03f2f
   React-perflogger: af8a3d31546077f42d729b949925cc4549f14def
   React-RCTActionSheet: 57cc5adfefbaaf0aae2cf7e10bccd746f2903673
   React-RCTAnimation: 11c61e94da700c4dc915cf134513764d87fc5e2b

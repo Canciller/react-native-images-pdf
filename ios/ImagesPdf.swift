@@ -5,6 +5,7 @@ class ImagesPdf: NSObject {
   let E_PDF_PAGE_CREATE_ERROR = "PDF_PAGE_CREATE_ERROR"
   let E_OUTPUT_DIRECTORY_DOES_NOT_EXIST = "OUTPUT_DIRECTORY_DOES_NOT_EXIST"
   let E_OUTPUT_DIRECTORY_IS_NOT_WRITABLE = "OUTPUT_DIRECTORY_IS_NOT_WRITABLE"
+  let E_IMAGES_PATHS_IS_EMPTY = "IMAGE_PATHS_EMPTY"
   
   @objc
   func createPdf(_ options: NSDictionary, resolver resolve:RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
@@ -16,8 +17,7 @@ class ImagesPdf: NSObject {
       let outputFilename = createPdfOptions.outputFilename
       
       if imagePaths.isEmpty {
-        resolve(nil)
-        return
+        throw CreatePdfError.imagePathsIsEmpty
       }
       
       let data = try renderPdfData(imagePaths)
@@ -27,13 +27,17 @@ class ImagesPdf: NSObject {
                                        outputFilename: outputFilename)
       
       resolve(outputUrl.absoluteString)
+    } catch CreatePdfError.imagePathsIsEmpty {
+      reject(E_IMAGES_PATHS_IS_EMPTY,
+             "imagePaths is empty.",
+             nil)
     } catch CreatePdfError.outputDirectoryIsNotWritable {
       reject(E_OUTPUT_DIRECTORY_IS_NOT_WRITABLE,
-             "Output directory is not writable.",
+             "outputDirectory is not writable.",
              nil)
     } catch CreatePdfError.outputDirectoryDoesNotExist {
       reject(E_OUTPUT_DIRECTORY_DOES_NOT_EXIST,
-             "Output directory does not exists.",
+             "outputDirectory does not exists.",
              nil)
     } catch CreatePdfError.pdfPageCreateError(let error) {
       reject(E_PDF_PAGE_CREATE_ERROR,

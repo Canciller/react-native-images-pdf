@@ -47,8 +47,7 @@ public class ImagesPdfModule extends ReactContextBaseJavaModule {
       String outputFilename = options.getString("outputFilename");
 
       if (imagePaths.size() == 0) {
-        promise.resolve(null);
-        return;
+        throw new Exception("imagePaths is empty.");
       }
 
       PdfDocument pdfDocument = new PdfDocument();

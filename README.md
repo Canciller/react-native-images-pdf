@@ -32,9 +32,9 @@ createPdf(options)
 
 ## API
 
-### `createPdf(options: CreatePdfOptions) => Promise<string | null>`
+### `createPdf(options: CreatePdfOptions) => Promise<string>`
 
-Returns a Promise that resolves to a `string` representing the output path of the generated PDF file. If `imagePaths` is empty, it returns `null`.
+Returns a Promise that resolves to a `string` representing the output path of the generated PDF file.
 
 #### `CreatePdfOptions`
 
