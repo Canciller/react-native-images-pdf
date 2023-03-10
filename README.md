@@ -1,6 +1,6 @@
 # react-native-images-pdf
 
-![badge](https://img.shields.io/npm/v/react-native-images-pdf.svg?style=flat-square)
+[![badge](https://img.shields.io/npm/v/react-native-images-pdf.svg?style=flat-square)](https://www.npmjs.com/package/react-native-images-pdf)
 
 Easily generate PDF files from images in React Native.
 
